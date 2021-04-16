@@ -1,12 +1,18 @@
 <template>
   <div>
     <div class="counter">
-      <p>{{ centerItemFizzBuzz }}/{{ numberOfItems }}</p>
+      <p>{{ centerItemFizzBuzz }}/{{ lastItemInView }}</p>
       <input v-model="centerItem" />
     </div>
-    <ol>
-      <li :id="'item-' + index" v-for="(item, index) in numberOfItems"></li>
-    </ol>
+    <div
+      :style="{
+        marginTop: firstItemInView * heightOfEachItem - heightOfEachItem + 'px'
+      }"
+    >
+      <div :id="'item-' + number" v-for="number in currentRangeOfItems">
+        {{ fizzBuzz(number) }}
+      </div>
+    </div>
   </div>
 </template>
 
@@ -15,6 +21,17 @@ import { debounce } from "../functions";
 
 export default {
   name: "FizzBuzz",
+  methods: {
+    fizzBuzz(value) {
+      return value % 15 == 0
+        ? "FizzBuzz"
+        : value % 3 == 0
+        ? "Fizz"
+        : value % 5 == 0
+        ? "Buzz"
+        : value;
+    }
+  },
   computed: {
     centerItem: {
       get: function() {
@@ -28,7 +45,8 @@ export default {
       },
       // setter
       set: debounce(function(newValue) {
-        this.numberOfItems = +newValue + this.numberOfAdditionalItems;
+        this.totalScrolled = +newValue * this.heightOfEachItem;
+        window.scrollTo(0, this.totalScrolled);
         // go to center of newValue
 
         this.$nextTick(() => {
@@ -39,29 +57,46 @@ export default {
       }, 750)
     },
     centerItemFizzBuzz() {
-      const value = this.centerItem;
-
-      return value % 15 == 0
-        ? "FizzBuzz"
-        : value % 3 == 0
-        ? "Fizz"
-        : value % 5 == 0
-        ? "Buzz"
-        : value;
+      return this.fizzBuzz(this.centerItem);
+    },
+    numberOfVisibleItems() {
+      return Math.round(
+        document.documentElement.clientHeight / this.heightOfEachItem
+      );
     },
     numberOfVisibleItemsHalfed() {
-      return Math.round(
-        document.documentElement.clientHeight / this.heightOfEachItem / 2
+      return Math.round(this.numberOfVisibleItems / 2);
+    },
+    currentOfVisibleItems() {
+      return this.numberOfVisibleItems * 2;
+    },
+    firstItemInView() {
+      const calcValue = Math.round(
+        this.lastItemInView + 1 - this.numberOfVisibleItems
       );
+      return calcValue > 0 ? calcValue : 0;
+    },
+    lastItemInView() {
+      const calcValue = Math.round(this.totalScrolled / this.heightOfEachItem);
+      return calcValue > this.numberOfVisibleItems
+        ? calcValue
+        : this.numberOfVisibleItems;
+    },
+    lastItemInViewDouble() {
+      return this.lastItemInView * 2;
+    },
+    currentRangeOfItems() {
+      return Array(this.lastItemInView + 1024 - this.firstItemInView + 1)
+        .fill()
+        .map((_, idx) => this.firstItemInView + idx);
     }
   },
   data() {
     return {
-      numberOfItems: 150,
       heightOfEachItem: 24,
       totalScrolled: 0,
-      offsetHeight: document.documentElement.offsetHeight,
-      numberOfAdditionalItems: 50
+      offsetHeight: document.documentElement.offsetHeight
+      //numberOfAdditionalItems: 3000
     };
   },
   created() {
@@ -77,9 +112,9 @@ export default {
       // document.documentElement.offsetHeight
       this.offsetHeight = document.documentElement.offsetHeight;
 
-      if (this.totalScrolled > this.offsetHeight - 300) {
-        this.numberOfItems += this.numberOfAdditionalItems;
-      }
+      // if (this.totalScrolled > this.offsetHeight - 300) {
+      //   this.numberOfItems += this.numberOfAdditionalItems;
+      // }
     });
   }
 };
@@ -95,7 +130,7 @@ body {
   color: hotpink;
 }
 
-ol {
+/* ol {
   margin: 0;
 }
 li {
@@ -125,7 +160,7 @@ li:nth-child(5n):before {
 
 li:nth-child(15n):before {
   content: "FizzBuzz";
-}
+} */
 
 p {
   margin: 0;

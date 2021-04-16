@@ -1,5 +1,5 @@
 {
-  "name": "FizzBuzz",
+  "name": "fizzbuzz",
   "private": true,
   "scripts": {
     "develop": "gridsome develop",
