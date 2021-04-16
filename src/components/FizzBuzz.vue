@@ -1,17 +1,15 @@
 <template>
   <div>
     <div class="counter">
-      <p>{{ centerItemFizzBuzz }}/{{ lastItemInView }}</p>
+      <p>
+        {{ centerItemFizzBuzz.toLocaleString() }}/{{
+          lastItemInView.toLocaleString()
+        }}
+      </p>
       <input v-model="centerItem" />
     </div>
-    <div
-      :style="{
-        marginTop: firstItemInView * heightOfEachItem - heightOfEachItem + 'px'
-      }"
-    >
-      <div :id="'item-' + number" v-for="number in currentRangeOfItems">
-        {{ fizzBuzz(number) }}
-      </div>
+    <div :id="'item-' + number" v-for="number in currentRangeOfItems">
+      {{ fizzBuzz(number) }}
     </div>
   </div>
 </template>
@@ -29,15 +27,12 @@ export default {
         ? "Fizz"
         : value % 5 == 0
         ? "Buzz"
-        : value;
+        : value.toLocaleString();
     }
   },
   computed: {
     centerItem: {
       get: function() {
-        if (this.totalScrolled < this.numberOfVisibleItemsHalfed)
-          return this.numberOfVisibleItemsHalfed;
-
         return Math.round(
           this.totalScrolled / this.heightOfEachItem -
             this.numberOfVisibleItemsHalfed
@@ -45,15 +40,8 @@ export default {
       },
       // setter
       set: debounce(function(newValue) {
-        this.totalScrolled = +newValue * this.heightOfEachItem;
-        window.scrollTo(0, this.totalScrolled);
-
-        // go to center of newValue
-        this.$nextTick(() => {
-          document.documentElement.scrollTop =
-            newValue * this.heightOfEachItem -
-            this.numberOfVisibleItemsHalfed * this.heightOfEachItem;
-        });
+        this.totalScrolled =
+          (+newValue + this.numberOfVisibleItemsHalfed) * this.heightOfEachItem;
       }, 750)
     },
     centerItemFizzBuzz() {
@@ -68,25 +56,20 @@ export default {
       return Math.round(this.numberOfVisibleItems / 2);
     },
     currentOfVisibleItems() {
-      return this.numberOfVisibleItems * 2;
+      return this.numberOfVisibleItems;
     },
     firstItemInView() {
       const calcValue = Math.round(
         this.lastItemInView + 1 - this.numberOfVisibleItems
       );
-      return calcValue > 0 ? calcValue : 0;
+      return calcValue;
     },
     lastItemInView() {
       const calcValue = Math.round(this.totalScrolled / this.heightOfEachItem);
-      return calcValue > this.numberOfVisibleItems
-        ? calcValue
-        : this.numberOfVisibleItems;
-    },
-    lastItemInViewDouble() {
-      return this.lastItemInView * 2;
+      return calcValue;
     },
     currentRangeOfItems() {
-      return Array(this.lastItemInView + 1024 - this.firstItemInView + 1)
+      return Array(this.lastItemInView - this.firstItemInView + 1)
         .fill()
         .map((_, idx) => this.firstItemInView + idx);
     }
@@ -94,17 +77,19 @@ export default {
   data() {
     return {
       heightOfEachItem: 24,
-      totalScrolled: 0
+      totalScrolled: 1048
     };
+  },
+  mounted() {
+    window.scrollTo(0, 250);
   },
   created() {
     window.addEventListener("scroll", () => {
-      // >> This value is how far we have scrolled
-      // Math.round(document.documentElement.scrollTop + document.documentElement.clientHeight)
-      this.totalScrolled = Math.round(
-        document.documentElement.scrollTop +
-          document.documentElement.clientHeight
-      );
+      const scrolled = window.pageYOffset - 250;
+
+      this.totalScrolled = Math.round(scrolled + this.totalScrolled);
+
+      window.scrollTo(0, 250);
     });
   }
 };
@@ -119,38 +104,6 @@ body {
   background-color: var(--bg-color);
   color: hotpink;
 }
-
-/* ol {
-  margin: 0;
-}
-li {
-  list-style: decimal inside;
-  line-height: 1.5em;
-  margin: 0;
-  padding: 0;
-  position: relative;
-}
-
-li::before {
-  background: var(--bg-color);
-  height: 1.5em;
-  display: inline-block;
-  position: absolute;
-  left: 0;
-  width: 100%;
-}
-
-li:nth-child(3n):before {
-  content: "Fizz";
-}
-
-li:nth-child(5n):before {
-  content: "Buzz";
-}
-
-li:nth-child(15n):before {
-  content: "FizzBuzz";
-} */
 
 p {
   margin: 0;
