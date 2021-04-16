@@ -47,8 +47,8 @@ export default {
       set: debounce(function(newValue) {
         this.totalScrolled = +newValue * this.heightOfEachItem;
         window.scrollTo(0, this.totalScrolled);
-        // go to center of newValue
 
+        // go to center of newValue
         this.$nextTick(() => {
           document.documentElement.scrollTop =
             newValue * this.heightOfEachItem -
@@ -94,9 +94,7 @@ export default {
   data() {
     return {
       heightOfEachItem: 24,
-      totalScrolled: 0,
-      offsetHeight: document.documentElement.offsetHeight
-      //numberOfAdditionalItems: 3000
+      totalScrolled: 0
     };
   },
   created() {
@@ -107,14 +105,6 @@ export default {
         document.documentElement.scrollTop +
           document.documentElement.clientHeight
       );
-
-      // >> This value is max we can scroll
-      // document.documentElement.offsetHeight
-      this.offsetHeight = document.documentElement.offsetHeight;
-
-      // if (this.totalScrolled > this.offsetHeight - 300) {
-      //   this.numberOfItems += this.numberOfAdditionalItems;
-      // }
     });
   }
 };
